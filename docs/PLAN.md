@@ -10,6 +10,21 @@ Model: default Claude via `langchain-anthropic` (`claude-sonnet-5-5`), configura
 
 Existing `index.html` is left untouched.
 
+## Working rules
+- **No commits without explicit approval.** After each change, show what changed and wait. Commit, push, open or merge a PR only after the user replies **"Y"** or **"yes"**. Approval covers that one change only; ask again for the next one.
+
+## Build phases
+Each phase adds one idea, ends with something runnable, and is its own PR (subject to the working rules above). Phases 2–3 are learning scripts kept in `learn/` so they can be compared with the LangGraph version.
+
+1. **Catalog, no AI**: fetch + normalize Alo `products.json`, `search()`; a script prints results for e.g. `"black leggings" size=S max=100`. Shows the real data and filters.
+2. **One LLM call, no tools** (`learn/`): send a message to Claude, print reply + tokens + cost. Shows Claude guessing products because it has no catalog access.
+3. **Tools by hand** (`learn/`): wrap `search()` as a tool; print the tool call Claude requests, run it, send the result back, print the answer. One loop pass done manually.
+4. **LangGraph runs the loop**: agent node + tools node + `tools_condition`; `--verbose` prints each pass. Compare with phase 3 to see what LangGraph automates.
+5. **Memory + chat**: `MemorySaver` + `thread_id`, `You:` loop with `/new` and `/quit`. Follow-ups like "cheaper ones" work.
+6. **Good shopper**: compare / facets / validated `recommend_products`, product panels, prompt caching, fake-model tests. Real-products-only picks and lower cost per message.
+
+Phase 1 needs no API key; phases 2–6 need `ANTHROPIC_API_KEY` for real replies (tests use a fake model).
+
 ## Layout
 ```
 shopper/
