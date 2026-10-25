@@ -1,0 +1,88 @@
+{
+  "products": [
+    {
+      "id": 1001,
+      "title": "Airlift High-Waist Legging - Black",
+      "handle": "airlift-high-waist-legging-black",
+      "body_html": "<p>Our <strong>Airlift</strong> legging is sleek &amp; sculpting.</p>",
+      "vendor": "Alo Yoga",
+      "product_type": "Women:Bottoms:Leggings",
+      "tags": ["Fabric:Airlift", "ColorGroup:Black", "Color:Black:Color", "Fit:Fitted", "Women:Activity:Yoga", "Women:Activity:Pilates", "Status:Active", "pricing:fullprice"],
+      "options": [{"name": "Color", "values": ["Black"]}, {"name": "Size", "values": ["XS", "S", "M"]}],
+      "variants": [
+        {"option1": "Black", "option2": "XS", "option3": null, "price": "128.00", "compare_at_price": null, "available": true},
+        {"option1": "Black", "option2": "S", "option3": null, "price": "128.00", "compare_at_price": null, "available": true},
+        {"option1": "Black", "option2": "M", "option3": null, "price": "128.00", "compare_at_price": null, "available": false}
+      ],
+      "images": [{"src": "https://cdn.example.com/legging-black.jpg"}]
+    },
+    {
+      "id": 1002,
+      "title": "Airbrush Bootcut Legging - Navy",
+      "handle": "airbrush-bootcut-legging-navy",
+      "body_html": "<p>Soft, brushed fabric for running errands or running miles.</p>",
+      "vendor": "Alo Yoga",
+      "product_type": "Women:Bottoms:Leggings",
+      "tags": ["Fabric:Airbrush", "ColorGroup:Blue", "Color:Navy:Color", "Women:Activity:Run", "pricing:saleprice"],
+      "options": [{"name": "Size", "values": ["S", "M"]}, {"name": "Color", "values": ["Navy"]}],
+      "variants": [
+        {"option1": "S", "option2": "Navy", "option3": null, "price": "68.00", "compare_at_price": "98.00", "available": true},
+        {"option1": "M", "option2": "Navy", "option3": null, "price": "68.00", "compare_at_price": "98.00", "available": true}
+      ],
+      "images": []
+    },
+    {
+      "id": 1003,
+      "title": "Accolade Hoodie - Athletic Grey",
+      "handle": "accolade-hoodie-athletic-grey",
+      "body_html": "<p>A relaxed, cozy hoodie for lounging.</p>",
+      "vendor": "Alo Yoga",
+      "product_type": "Men:Outerwear:Coverups:Hoodies",
+      "tags": ["ColorGroup:Grey", "Men:Activity:Lounge"],
+      "options": [{"name": "Color", "values": ["Athletic Grey"]}, {"name": "Size", "values": ["M", "L"]}],
+      "variants": [
+        {"option1": "Athletic Grey", "option2": "M", "option3": null, "price": "118.00", "compare_at_price": "118.00", "available": true},
+        {"option1": "Athletic Grey", "option2": "L", "option3": null, "price": "118.00", "compare_at_price": null, "available": true}
+      ],
+      "images": [{"src": "https://cdn.example.com/hoodie.jpg"}]
+    },
+    {
+      "id": 1004,
+      "title": "Airlift Intrigue Bra - Black",
+      "handle": "airlift-intrigue-bra-black",
+      "body_html": "<p>Sold out everywhere.</p>",
+      "vendor": "Alo Yoga",
+      "product_type": "Women:Bras",
+      "tags": ["Fabric:Airlift", "ColorGroup:Black", "Women:Activity:Yoga"],
+      "options": [{"name": "Color", "values": ["Black"]}, {"name": "Size", "values": ["S"]}],
+      "variants": [
+        {"option1": "Black", "option2": "S", "option3": null, "price": "78.00", "compare_at_price": null, "available": false}
+      ],
+      "images": []
+    },
+    {
+      "id": 1005,
+      "title": "Gift Card Internal SKU",
+      "handle": "internal-sku",
+      "body_html": "",
+      "vendor": "Alo Yoga",
+      "product_type": "Internal",
+      "tags": [],
+      "options": [{"name": "Title", "values": ["Default"]}],
+      "variants": [{"option1": "Default", "price": "0.00", "compare_at_price": null, "available": true}],
+      "images": []
+    },
+    {
+      "id": 1006,
+      "title": "Test Product",
+      "handle": "test-product",
+      "body_html": "",
+      "vendor": "Fake",
+      "product_type": "Women:Bottoms:Leggings",
+      "tags": [],
+      "options": [{"name": "Size", "values": ["S"]}],
+      "variants": [{"option1": "S", "price": "1.00", "compare_at_price": null, "available": true}],
+      "images": []
+    }
+  ]
+}
