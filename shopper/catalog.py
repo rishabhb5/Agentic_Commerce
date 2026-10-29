@@ -435,3 +435,20 @@ class Catalog:
 def product_to_dict(p: Product) -> dict:
     """Plain dict, handy for printing or JSON."""
     return asdict(p)
+
+
+def product_summary(p: Product) -> dict:
+    """The fields an LLM needs to judge a product, without the long description."""
+    return {
+        "id": p.id,
+        "title": p.title,
+        "type": p.product_type,
+        "price": p.price_min if p.price_min == p.price_max else [p.price_min, p.price_max],
+        **({"was": p.compare_at_price} if p.on_sale else {}),
+        "fabric": p.fabric,
+        "fit": p.fit,
+        "activities": p.activities,
+        "colors": p.colors[:8],
+        "sizes_in_stock": p.sizes_in_stock,
+        "url": p.url,
+    }
