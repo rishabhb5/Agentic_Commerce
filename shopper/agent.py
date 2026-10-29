@@ -12,6 +12,7 @@ import os
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import SystemMessage
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, MessagesState, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 
@@ -22,6 +23,7 @@ SHOPPER_PROMPT = """You are a shopping assistant for {store}.
 - Use search_products to find real products. Never invent products, prices or sizes.
 - If a search finds nothing, try again with fewer or looser filters.
 - Recommend 1-3 products: name, price, and one line on why each fits.
+- Follow-ups ("cheaper ones?", "in black") refer to the earlier conversation.
 - Keep replies short."""
 
 
@@ -36,7 +38,8 @@ def make_llm(model: str | None = None) -> BaseChatModel:
     )
 
 
-def build_graph(llm: BaseChatModel, store: str = "aloyoga.com"):
+def build_graph(llm: BaseChatModel, store: str = "aloyoga.com", checkpointer=None):
+    """The compiled graph. Conversations are saved per `thread_id` by the checkpointer."""
     model = llm.bind_tools(TOOLS)
     system = SystemMessage(SHOPPER_PROMPT.format(store=store))
 
@@ -50,4 +53,4 @@ def build_graph(llm: BaseChatModel, store: str = "aloyoga.com"):
     graph.add_edge(START, "agent")
     graph.add_conditional_edges("agent", tools_condition)  # → "tools" or END
     graph.add_edge("tools", "agent")
-    return graph.compile()
+    return graph.compile(checkpointer=checkpointer or MemorySaver())

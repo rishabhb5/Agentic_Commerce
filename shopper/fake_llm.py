@@ -54,6 +54,7 @@ def tool_call(name: str, **args: Any) -> dict:
 _SIZE_RE = re.compile(r"\bsize\s+([a-z0-9]+)\b", re.I)
 _PRICE_RE = re.compile(r"(?:under|below|less than|max|<)\s*\$?\s*(\d+)", re.I)
 _COLORS = "black white navy blue green red pink grey gray beige brown purple".split()
+_CATEGORIES = set("leggings legging bras bra hoodie hoodies shorts jackets jacket tanks tank joggers jogger pants sweatpants tees skirts dresses socks bags hats".split())
 _DEPARTMENTS = {"women": "Women", "womens": "Women", "men": "Men", "mens": "Men"}
 _STOPWORDS = set("a an the i me my for some something in of to under below with and or size want need looking any show".split())
 
@@ -71,6 +72,8 @@ def parse_request(text: str) -> dict:
     for w in words:
         if w in _COLORS:
             args["color"] = w.capitalize()
+        elif w in _CATEGORIES:
+            args["category"] = w[:-1] if w.endswith("s") else w  # "leggings" → "legging"
         elif w.replace("'", "") in _DEPARTMENTS:
             args["department"] = _DEPARTMENTS[w.replace("'", "")]
     query = [
