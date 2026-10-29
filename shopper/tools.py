@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 
 from langchain_core.tools import tool
+from pydantic import BaseModel, Field
 
 from shopper.catalog import Catalog, product_summary
 
@@ -81,4 +82,49 @@ def get_product_details(product_id: int) -> str:
     return json.dumps({**product_summary(p), "description": p.description[:1200]})
 
 
-TOOLS = [search_products, get_product_details]
+@tool
+def list_facets() -> str:
+    """What the store carries: departments, categories, fabrics, fits, colours and
+    activities, with product counts. Use it to map vague requests to real filters."""
+    facets = get_catalog().facets()
+    return json.dumps({kind: dict(values[:40]) for kind, values in facets.items()})
+
+
+@tool
+def compare_products(product_ids: list[int]) -> str:
+    """Side-by-side details (price, fabric, fit, sizes, colours) for 2-5 products."""
+    rows = []
+    for pid in product_ids[:5]:
+        p = get_catalog().get(pid)
+        rows.append(
+            {**product_summary(p), "description": p.description[:300]}
+            if p else {"id": pid, "error": "unknown product id"}
+        )
+    return json.dumps(rows)
+
+
+class Recommendation(BaseModel):
+    product_id: int = Field(description="id from search_products")
+    reason: str = Field(description="one line on why it fits what the user asked for")
+
+
+@tool(response_format="content_and_artifact")
+def recommend_products(items: list[Recommendation]) -> tuple[str, list[dict]]:
+    """Submit your final 1-3 picks. Call this before your final answer.
+    Only ids returned by the other tools are accepted."""
+    accepted, rejected = [], []
+    for item in items[:3]:
+        item = Recommendation.model_validate(item)
+        p = get_catalog().get(item.product_id)
+        if p is None:
+            rejected.append(item.product_id)
+        else:
+            accepted.append({**product_summary(p), "reason": item.reason, "image_url": p.image_url})
+    message = f"Saved {len(accepted)} pick(s) to show the user."
+    if rejected:
+        message += f" Rejected unknown ids {rejected}: only recommend products from search results."
+    # content → what the LLM sees; artifact → copied into state["recommendations"]
+    return message, accepted
+
+
+TOOLS = [list_facets, search_products, get_product_details, compare_products, recommend_products]

@@ -5,3 +5,4 @@ python-dotenv>=1.0
 langgraph>=1.2
 langchain-core>=1.7
 langchain-anthropic>=1.7
+rich>=13

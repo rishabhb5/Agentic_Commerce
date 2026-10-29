@@ -19,8 +19,11 @@ import uuid
 import httpx
 from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, ToolMessage
+from rich.console import Console
+from rich.markup import escape
+from rich.panel import Panel
 
-from shopper.agent import build_graph, make_llm
+from shopper.agent import build_graph, make_llm, new_turn
 from shopper.pricing import DEFAULT_MODEL, Usage, usage_from_langchain
 from shopper.tools import get_catalog
 
@@ -29,19 +32,19 @@ def print_update(node: str, update: dict, model: str) -> None:
     """--verbose: show what each node did on this pass."""
     for msg in update.get("messages", []):
         if isinstance(msg, AIMessage):
-            calls = ", ".join(f"{c['name']}({json.dumps(c['args'])})" for c in msg.tool_calls)
+            calls = ", ".join(f"{c['name']}({json.dumps(c['args'], ensure_ascii=False)})" for c in msg.tool_calls)
             print(f"  [agent] LLM call → {calls or 'answer'}   ({usage_from_langchain(msg).describe(model)})")
         elif isinstance(msg, ToolMessage):
             content = msg.content if isinstance(msg.content, str) else json.dumps(msg.content)
-            found = len(json.loads(content)) if content.startswith("[") else 1
-            print(f"  [tools] ran {msg.name} → {found} result(s)")
+            result = f"{len(json.loads(content))} result(s)" if content.startswith("[") else content[:100]
+            print(f"  [tools] ran {msg.name} → {result}")
 
 
-def ask(graph, text: str, thread_id: str, model: str, verbose: bool) -> tuple[str, Usage]:
+def ask(graph, text: str, thread_id: str, model: str, verbose: bool) -> tuple[str, list[dict], Usage]:
     """Run one user message through the graph. Earlier turns come from the checkpointer."""
     config = {"configurable": {"thread_id": thread_id}}
     usage, answer = Usage(), "(no answer)"
-    for step in graph.stream({"messages": [("user", text)]}, config, stream_mode="updates"):
+    for step in graph.stream(new_turn(text), config, stream_mode="updates"):
         for node, update in step.items():
             if verbose:
                 print_update(node, update, model)
@@ -50,7 +53,26 @@ def ask(graph, text: str, thread_id: str, model: str, verbose: bool) -> tuple[st
                     usage = usage.add(usage_from_langchain(msg))
                     if not msg.tool_calls:
                         answer = msg.text
-    return answer, usage
+    recommendations = graph.get_state(config).values.get("recommendations", [])
+    return answer, recommendations, usage
+
+
+def product_panel(rec: dict) -> Panel:
+    low = rec["price"][0] if isinstance(rec["price"], list) else rec["price"]
+    price = f"[bold]${low:,.2f}[/bold]"
+    if isinstance(rec["price"], list):
+        price += f"–${rec['price'][1]:,.2f}"
+    if rec.get("was"):
+        price += f"  [strike dim]${rec['was']:,.2f}[/strike dim]  [green]sale[/green]"
+    details = " · ".join(x for x in [rec.get("fabric"), rec.get("fit"), ", ".join(rec.get("activities") or [])] if x)
+    lines = [
+        price + (f"   [dim]{escape(details)}[/dim]" if details else ""),
+        f"Colours: {escape(', '.join(rec.get('colors') or []) or '-')}",
+        f"Sizes in stock: {escape(', '.join(rec.get('sizes_in_stock') or []) or '-')}",
+        f"[italic]{escape(rec.get('reason', ''))}[/italic]",
+        f"[link={rec['url']}]{escape(rec['url'])}[/link]",
+    ]
+    return Panel("\n".join(lines), title=f"[bold]{escape(rec['title'])}[/bold]", title_align="left", expand=False)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -81,11 +103,16 @@ def main(argv: list[str] | None = None) -> int:
     graph = build_graph(llm)
     thread_id = uuid.uuid4().hex
 
+    console = Console()
+
     def turn(text: str) -> None:
-        answer, usage = ask(graph, text, thread_id, model, args.verbose)
-        print(f"\nShopper: {answer}\n")
+        answer, recommendations, usage = ask(graph, text, thread_id, model, args.verbose)
+        console.print(f"\n[bold cyan]Shopper:[/bold cyan] {escape(answer)}\n")
+        for rec in recommendations:
+            console.print(product_panel(rec))
         if args.verbose:
-            print(f"  ({usage.describe(model)})\n")
+            console.print(f"[dim]({usage.describe(model)})[/dim]")
+        console.print()
 
     if args.question:
         turn(" ".join(args.question))
