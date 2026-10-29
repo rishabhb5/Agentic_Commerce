@@ -15,6 +15,7 @@ PRICES: dict[str, tuple[float, float, float]] = {
     "claude-opus-5-5": (4.00, 20.00, 0.20),
     "claude-sonnet-5-5": (2.00, 10.00, 0.20),
     "claude-haiku-5-5": (0.10, 0.50, 0.01),
+    "fake": (0.0, 0.0, 0.0),  # --fake-llm
 }
 CACHE_WRITE_MULTIPLIER = 1.25
 
